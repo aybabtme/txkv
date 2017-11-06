@@ -5,7 +5,6 @@ package txkv
 import (
 	"bytes"
 	"context"
-	"log"
 	"sync"
 
 	"github.com/aybabtme/txkv/internal/ds"
@@ -93,18 +92,13 @@ func (k *memkv) List(ctx context.Context, prefix Key) ([]Key, error) {
 
 func (k *memkv) list(prefix Key) []Key {
 	firstK, _, ok := k.smap.Ceiling(prefix)
-	log.Printf("(firstK=%q, ok=%v) = Ceiling(prefix=%q)", firstK, ok, prefix)
 	if !ok {
 		return nil
 	}
 	lastK, _, _ := k.smap.Max()
-	log.Printf("(lastK=%q) = Max()", lastK)
 
 	var keys []Key
-	log.Printf("RangedKeys(%q, %q, func(k, v []byte) bool {", firstK, lastK)
-	defer log.Printf("}")
 	k.smap.RangedKeys(firstK, lastK, func(k, v []byte) bool {
-		log.Printf("\tfunc(%q, %q) { ... })", k, v)
 		if !bytes.HasPrefix(k, prefix) {
 			return false
 		}
