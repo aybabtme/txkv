@@ -10,19 +10,19 @@ import (
 )
 
 func TestInMem(t *testing.T) {
-	testKV(t, func(t testing.TB) ConsistentKV { return InMem() })
+	testKV(t, func(t testing.TB) TransactionalKV { return InMem() })
 }
 
-func testKV(t *testing.T, mkKV func(t testing.TB) ConsistentKV) {
+func testKV(t *testing.T, mkKV func(t testing.TB) TransactionalKV) {
 	t.Helper()
 	tests := []struct {
 		name string
-		op   func(context.Context, *testing.T, ConsistentKV)
+		op   func(context.Context, *testing.T, TransactionalKV)
 	}{
 
 		{
 			name: "add, get, delete",
-			op: func(ctx context.Context, t *testing.T, kv ConsistentKV) {
+			op: func(ctx context.Context, t *testing.T, kv TransactionalKV) {
 				key := Key("hello")
 				want := Value("world")
 
@@ -44,7 +44,7 @@ func testKV(t *testing.T, mkKV func(t testing.TB) ConsistentKV) {
 		},
 		{
 			name: "add many, list a slice",
-			op: func(ctx context.Context, t *testing.T, kv ConsistentKV) {
+			op: func(ctx context.Context, t *testing.T, kv TransactionalKV) {
 				prefix := "1"
 				keys := []Key{
 					Key("0"),
@@ -77,7 +77,7 @@ func testKV(t *testing.T, mkKV func(t testing.TB) ConsistentKV) {
 
 		{
 			name: "tx: add, get, delete",
-			op: func(ctx context.Context, t *testing.T, kv ConsistentKV) {
+			op: func(ctx context.Context, t *testing.T, kv TransactionalKV) {
 				key := Key("hello")
 				want := Value("world")
 
@@ -105,7 +105,7 @@ func testKV(t *testing.T, mkKV func(t testing.TB) ConsistentKV) {
 		},
 		{
 			name: "tx: add, delete, get",
-			op: func(ctx context.Context, t *testing.T, kv ConsistentKV) {
+			op: func(ctx context.Context, t *testing.T, kv TransactionalKV) {
 				key := Key("hello")
 				want := Value("world")
 
@@ -136,7 +136,7 @@ func testKV(t *testing.T, mkKV func(t testing.TB) ConsistentKV) {
 		},
 		{
 			name: "tx: add, delete, add, get",
-			op: func(ctx context.Context, t *testing.T, kv ConsistentKV) {
+			op: func(ctx context.Context, t *testing.T, kv TransactionalKV) {
 				key := Key("hello")
 				want := Value("world")
 
@@ -175,7 +175,7 @@ func testKV(t *testing.T, mkKV func(t testing.TB) ConsistentKV) {
 		},
 		{
 			name: "tx: add many, list a slice",
-			op: func(ctx context.Context, t *testing.T, kv ConsistentKV) {
+			op: func(ctx context.Context, t *testing.T, kv TransactionalKV) {
 				prefix := "1"
 				keys := []Key{
 					Key("0"),

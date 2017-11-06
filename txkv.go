@@ -1,3 +1,5 @@
+// Defines an interface for a key-value store with transactions. Transactions
+// are expected to provide read-commited consistency.
 package txkv
 
 import (
@@ -22,21 +24,25 @@ type KV interface {
 	List(ctx context.Context, prefix Key) ([]Key, error)
 }
 
-// ConsistentKV is a KV that has transactions.
-type ConsistentKV interface {
+// TransactionalKV is a KV that has transactions. Full ACID is not guaranteed:
+// - atomicity: as expected
+// - consistency: as expected
+// - isolation: only read-commited
+// - durability: no, only in-memory
+type TransactionalKV interface {
 	KV
 	Begin(ctx context.Context) (TxKV, error)
 }
 
-// TxKV is a KV that is an ACID transaction on top of a KV.
+// TxKV is a KV that is a transaction on top of a KV.
 type TxKV interface {
 	KV
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
 }
 
-// InMem returns an in-memory KV.
-func InMem() ConsistentKV {
+// InMem returns an in-memory TransactionalKV.
+func InMem() TransactionalKV {
 	return newMemKV()
 }
 
@@ -145,7 +151,8 @@ func (k *txmemkv) Get(ctx context.Context, key Key) (Value, bool, error) {
 		k.mu.Unlock()
 		return k.tx.Get(ctx, key)
 	}
-	// not ACID, since we'll see concurrent changes
+	// we offer read-commited, we don't offer repeatable-reads: we'll see
+	// concurrently commited changes to the underlying KV
 	v, ok, err := k.root.Get(ctx, key)
 	k.mu.Unlock()
 	return v, ok, err
